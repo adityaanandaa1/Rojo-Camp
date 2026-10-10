@@ -31,17 +31,17 @@ internet, dan sinkronisasi ke cloud hanya berfungsi sebagai *backup*.
 
 ## Fitur
 
-| | Fitur | Keterangan |
-|---|---|---|
-| 🗺️ | **Denah tenda interaktif** | 46 slot dalam 3 kategori (Mega, Big, Citylight). Slot yang sudah dipesan di tanggal yang bentrok otomatis dikunci. |
-| 🧺 | **Multi-slot** | Satu rombongan bisa memesan beberapa slot dari kategori berbeda sekaligus. |
-| 📝 | **Reservasi & Onsite** | Mendukung booking lewat WhatsApp maupun pengunjung yang datang langsung. |
-| 🎫 | **E-ticket QR** | QR unik per rombongan, bisa dibagikan sebagai gambar lewat WhatsApp. |
-| 📷 | **Check-out via scan** | Scan QR saat pengunjung pulang, status berubah ke *Non-Aktif* dan slot terbuka lagi. |
-| 📊 | **Statistik** | Jumlah slot terpakai per kategori dan donut chart, dengan filter tanggal. |
-| 📤 | **Ekspor CSV** | Unduh laporan pengunjung berdasarkan rentang tanggal. |
-| ☁️ | **Backup Google Sheets** | Sinkronisasi dua arah lewat Google Apps Script: kirim data ke Sheets dan tarik kembali ke HP. |
-| 📴 | **Offline-first** | Input, denah, QR, dan scan tetap berfungsi tanpa sinyal. |
+| Fitur | Keterangan |
+|---|---|
+| **Denah tenda interaktif** | 46 slot dalam 3 kategori (Mega, Big, Citylight). Slot yang sudah dipesan di tanggal yang bentrok otomatis dikunci. |
+| **Multi-slot** | Satu rombongan bisa memesan beberapa slot dari kategori berbeda sekaligus. |
+| **Reservasi & Onsite** | Mendukung booking lewat WhatsApp maupun pengunjung yang datang langsung. |
+| **E-ticket QR** | QR unik per rombongan, bisa dibagikan sebagai gambar lewat WhatsApp. |
+| **Check-out via scan** | Scan QR saat pengunjung pulang, status berubah ke *Non-Aktif* dan slot terbuka lagi. |
+| **Statistik** | Jumlah slot terpakai per kategori dan donut chart, dengan filter tanggal. |
+| **Ekspor CSV** | Unduh laporan pengunjung berdasarkan rentang tanggal. |
+| **Backup Google Sheets** | Sinkronisasi dua arah lewat Google Apps Script: kirim data ke Sheets dan tarik kembali ke HP. |
+| **Offline-first** | Input, denah, QR, dan scan tetap berfungsi tanpa sinyal. |
 
 ## Screenshot
 
@@ -53,7 +53,7 @@ internet, dan sinkronisasi ke cloud hanya berfungsi sebagai *backup*.
 
 ```mermaid
 flowchart LR
-    subgraph HP["📱 HP Admin (offline)"]
+    subgraph HP["HP Admin (offline)"]
         UI[Screens] --> P[Providers]
         P --> R[Repositories]
         R --> DB[(SQLite)]
@@ -111,8 +111,8 @@ Dashboard.html       # Dashboard web (dilayani oleh Apps Script)
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/adityaanandaa1/rojocamp.git
-cd rojocamp
+git clone https://github.com/adityaanandaa1/Rojo-Camp.git
+cd Rojo-Camp
 flutter pub get
 ```
 
@@ -150,19 +150,8 @@ flutter build apk --release
 - `lib/config/app_config.dart` tercantum di `.gitignore`, jadi URL deployment tidak ikut ter-*commit*.
 - Siapa pun yang memegang URL Web App bisa mengakses endpoint-nya. Jangan bagikan URL tersebut.
 
-## Roadmap
-
-- [x] CRUD pengunjung + SQLite
-- [x] Denah tenda dengan deteksi konflik & multi-slot
-- [x] E-ticket QR + share WhatsApp
-- [x] Check-out via scan QR
-- [x] Statistik & ekspor CSV
-- [x] Sinkronisasi Google Sheets
-- [ ] Validasi token di sisi Apps Script
-- [ ] Manajemen slot tenda dari dalam aplikasi
-
 ## Pembuat
 
-**Aditya Ananda** · [@adityaanandaa1](https://github.com/adityaanandaa1)
+**Aditya Ananda Kasi** · [@adityaanandaa1](https://github.com/adityaanandaa1)
 
 Dibuat sebagai proyek portofolio untuk kebutuhan operasional nyata Kebun Rojo Camp.
