@@ -44,6 +44,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Dokumen pelengkap (catatan pribadi, tidak ikut repo)
+PRD.md
+ROADMAP.md
+design.md
+LANGKAH_SELANJUTNYA.md
+
 # Secret & konfigurasi lokal
 lib/config/app_config.dart
 .env
