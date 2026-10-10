@@ -1,29 +1,15 @@
 /**
- * Code.gs — Backend Google Apps Script untuk Kebun Rojo Camp
+ * Backend Google Apps Script untuk Kebun Rojo Camp.
  *
- * DUA fungsi:
- * 1. doPost  → menerima sync data dari aplikasi Android (dipanggil HTTP POST)
- * 2. doGet   → menyajikan halaman Dashboard admin (dibuka lewat browser)
+ * doGet  → halaman Dashboard, atau data JSON jika ?action=getData
+ * doPost → menerima sinkronisasi data dari aplikasi Android
  *
- * ── CARA SETUP ────────────────────────────────────────────────
- * 1. Buka spreadsheet → Extensions → Apps Script
- * 2. Paste seluruh isi file ini di editor (ganti semua konten lama)
- * 3. Tambah file HTML baru bernama "Dashboard" → paste isi Dashboard.html
- * 4. Deploy → New Deployment → Web App
- *    - Execute as  : Me
- *    - Who has access: Anyone
- * 5. Copy URL deployment → paste ke lib/config/app_config.dart
- *
- * ── PENTING ───────────────────────────────────────────────────
- * Setiap kali Code.gs diubah → harus deploy ulang (versi baru).
- * Kalau tidak, app Android masih pakai versi kode lama.
- * ─────────────────────────────────────────────────────────────
+ * Setiap perubahan file ini perlu di-deploy ulang sebagai versi baru.
  */
 
-// Nama tab sheet — harus sama persis dengan AppConfig.sheetsTabName di Dart
+// Harus sama dengan AppConfig.sheetsTabName di aplikasi
 var SHEET_NAME = 'Rombongan';
 
-// Urutan kolom header di sheet — urutan ini yang menentukan posisi kolom Excel
 var HEADERS = [
   'id',
   'nama',
@@ -32,196 +18,127 @@ var HEADERS = [
   'tanggal_selesai',
   'jumlah_pengunjung',
   'jenis_pesanan',
-  'slot_terpilih_label',  // "VIP 2; Reguler A; Ground 4 C" — mudah dibaca
-  'slot_terpilih_id',     // "VIP2;REG_A;CL_4C" — untuk referensi teknis
+  'slot_terpilih_label',
+  'slot_terpilih_id',
   'status',
   'waktu_checkout',
   'keterangan',
   'created_at',
-  'synced_at'             // waktu Apps Script menerima data ini (server-side)
+  'synced_at'
 ];
 
-// ── doGet: Sajikan Dashboard ATAU data JSON ───────────────────────
-//
-// Query param ?action=getData → return semua data pengunjung sebagai JSON
-//   (dipakai oleh fitur "Tarik dari Cloud" di aplikasi Android)
-//
-// Tanpa query param → return halaman Dashboard HTML (akses lewat browser)
-
 function doGet(e) {
-  var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : '';
+  var action = e && e.parameter ? e.parameter.action : '';
 
   if (action === 'getData') {
-    // Return semua data sebagai JSON array untuk di-pull oleh aplikasi
-    return _getAllDataAsJson();
+    try {
+      return _jsonResponse(_readRecords());
+    } catch (err) {
+      console.error('doGet error:', err);
+      return _jsonResponse({ status: 'error', message: err.toString() });
+    }
   }
 
-  // Default: tampilkan halaman Dashboard HTML
   return HtmlService.createHtmlOutputFromFile('Dashboard')
     .setTitle('Dashboard Kebun Rojo Camp')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
-/**
- * Ambil semua data pengunjung dari sheet dan return sebagai JSON response.
- * Dipanggil lewat HTTP GET ?action=getData dari aplikasi Android.
- */
-function _getAllDataAsJson() {
-  try {
-    var sheet = _getOrCreateSheet();
-    var data = sheet.getDataRange().getValues();
-
-    if (data.length <= 1) {
-      // Hanya header atau kosong
-      return _jsonResponse([]);
-    }
-
-    var headers = data[0];
-    var rows = data.slice(1);
-
-    var result = rows.map(function(row) {
-      var obj = {};
-      headers.forEach(function(h, i) {
-        var val = row[i];
-        // Konversi Date object ke string ISO agar JSON-safe
-        if (val instanceof Date) {
-          obj[h] = val.toISOString();
-        } else {
-          obj[h] = val === null || val === undefined ? '' : val;
-        }
-      });
-      return obj;
-    });
-
-    // Filter baris kosong (id kosong)
-    result = result.filter(function(obj) { return obj['id'] && obj['id'] !== ''; });
-
-    return _jsonResponse(result);
-  } catch (err) {
-    console.error('_getAllDataAsJson error:', err);
-    return _jsonResponse({ status: 'error', message: err.toString() });
-  }
-}
-
-
-// ── doPost: Terima sync dari aplikasi Android ─────────────────────
-
 function doPost(e) {
   try {
-    var payload = JSON.parse(e.postData.contents);
-    var records = payload.records;
+    var records = JSON.parse(e.postData.contents).records;
 
     if (!Array.isArray(records) || records.length === 0) {
       return _jsonResponse({ status: 'ok', message: 'No records to sync', synced: 0 });
     }
 
-    var sheet = _getOrCreateSheet();
-
-    // Pastikan baris header ada
+    var sheet = _getSheet();
     _ensureHeaders(sheet);
 
     var syncedAt = new Date().toISOString();
-    var insertedCount = 0;
+    var inserted = 0;
 
-    records.forEach(function(record) {
-      var existingRow = _findRowById(sheet, record.id);
+    records.forEach(function (record) {
+      var row = _toRow(record, syncedAt);
+      var rowNum = _findRowById(sheet, record.id);
 
-      if (existingRow > 0) {
-        // Record sudah ada → UPDATE baris (status bisa berubah, misal checkout)
-        _updateRow(sheet, existingRow, record, syncedAt);
+      if (rowNum > 0) {
+        sheet.getRange(rowNum, 1, 1, row.length).setValues([row]);
       } else {
-        // Record baru → INSERT baris baru
-        _insertRow(sheet, record, syncedAt);
-        insertedCount++;
+        sheet.appendRow(row);
+        inserted++;
       }
     });
 
     return _jsonResponse({
       status: 'ok',
       synced: records.length,
-      inserted: insertedCount,
-      updated: records.length - insertedCount
+      inserted: inserted,
+      updated: records.length - inserted
     });
-
   } catch (err) {
-    // Log error ke Stackdriver (bisa dilihat di Apps Script → Executions)
     console.error('doPost error:', err);
-    return _jsonResponse({ status: 'error', message: err.toString() }, 500);
+    return _jsonResponse({ status: 'error', message: err.toString() });
   }
 }
 
-// ── Fungsi yang dipanggil dari Dashboard.html ─────────────────────
-
-/**
- * Ambil semua data dari sheet sebagai array of objects.
- * Dipanggil lewat google.script.run dari browser (Dashboard).
- */
+// Dipanggil dari Dashboard.html lewat google.script.run
 function ambilSemuaData() {
-  var sheet = _getOrCreateSheet();
-  var data = sheet.getDataRange().getValues();
-  if (data.length <= 1) return JSON.stringify([]); // hanya header / kosong
-
-  var headers = data[0];
-  var rows = data.slice(1); // buang baris header
-
-  var result = rows.map(function(row) {
-    var obj = {};
-    headers.forEach(function(h, i) {
-      // Konversi Date object ke string agar JSON-safe
-      var val = row[i];
-      if (val instanceof Date) {
-        obj[h] = val.toISOString();
-      } else {
-        obj[h] = val;
-      }
-    });
-    return obj;
-  });
-
-  return JSON.stringify(result);
+  return JSON.stringify(_readRecords());
 }
 
-// ── Private helpers ───────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────
 
-function _getOrCreateSheet() {
+function _getSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-  }
-  return sheet;
+  return ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
 }
 
 function _ensureHeaders(sheet) {
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(HEADERS);
-    // Format baris header: bold + background biru
-    var headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
-    headerRange.setFontWeight('bold');
-    headerRange.setBackground('#0088FF');
-    headerRange.setFontColor('#FFFFFF');
-    // Freeze baris header agar tidak ikut scroll
-    sheet.setFrozenRows(1);
-  }
+  if (sheet.getLastRow() > 0) return;
+
+  sheet.appendRow(HEADERS);
+  sheet.getRange(1, 1, 1, HEADERS.length)
+    .setFontWeight('bold')
+    .setBackground('#0088FF')
+    .setFontColor('#FFFFFF');
+  sheet.setFrozenRows(1);
 }
 
-/**
- * Cari baris berdasarkan id (kolom pertama).
- * Return nomor baris (1-indexed) atau -1 kalau tidak ketemu.
- */
+function _readRecords() {
+  var data = _getSheet().getDataRange().getValues();
+  if (data.length <= 1) return [];
+
+  var headers = data[0];
+
+  return data.slice(1)
+    .map(function (row) {
+      var obj = {};
+      headers.forEach(function (h, i) {
+        obj[h] = row[i] instanceof Date ? row[i].toISOString() : row[i];
+      });
+      return obj;
+    })
+    .filter(function (obj) { return obj.id; });
+}
+
+// Return nomor baris (1-indexed), atau -1 jika tidak ditemukan
 function _findRowById(sheet, id) {
   var lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return -1; // hanya header atau kosong
+  if (lastRow <= 1) return -1;
 
-  // Ambil kolom id saja (kolom 1) dari baris 2 ke bawah
-  var idColumn = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
-  for (var i = 0; i < idColumn.length; i++) {
-    if (idColumn[i][0] === id) return i + 2; // +2: 1-indexed + skip header
+  var ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  for (var i = 0; i < ids.length; i++) {
+    if (ids[i][0] === id) return i + 2;
   }
   return -1;
 }
 
-function _recordToRow(record, syncedAt) {
+function _toRow(record, syncedAt) {
+  var slotIds = Array.isArray(record.slot_terpilih_id)
+    ? record.slot_terpilih_id.join(';')
+    : record.slot_terpilih_id;
+
   return [
     record.id || '',
     record.nama || '',
@@ -231,9 +148,7 @@ function _recordToRow(record, syncedAt) {
     record.jumlah_pengunjung || 0,
     record.jenis_pesanan || '',
     record.slot_terpilih_label || '',
-    Array.isArray(record.slot_terpilih_id)
-      ? record.slot_terpilih_id.join(';')
-      : (record.slot_terpilih_id || ''),
+    slotIds || '',
     record.status || '',
     record.waktu_checkout || '',
     record.keterangan || '',
@@ -242,17 +157,7 @@ function _recordToRow(record, syncedAt) {
   ];
 }
 
-function _insertRow(sheet, record, syncedAt) {
-  sheet.appendRow(_recordToRow(record, syncedAt));
-}
-
-function _updateRow(sheet, rowNum, record, syncedAt) {
-  var row = _recordToRow(record, syncedAt);
-  sheet.getRange(rowNum, 1, 1, row.length).setValues([row]);
-}
-
-function _jsonResponse(data, statusCode) {
-  var output = ContentService.createTextOutput(JSON.stringify(data));
-  output.setMimeType(ContentService.MimeType.JSON);
-  return output;
+function _jsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }
