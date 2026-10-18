@@ -13,10 +13,11 @@ class SlotRepository {
     return rows.map(SlotTenda.fromMap).toList();
   }
 
-  /// Slot yang sudah terpakai di rentang [tanggalMulai, tanggalSelesai).
+  /// Slot yang sudah terpakai di rentang [tanggalMulai, tanggalSelesai]
+  /// (inklusif — reservasi tgl 1-3 memblokir slot tgl 1, 2, dan 3).
   ///
   /// Dipakai di Fase 2 (Denah Tenda) untuk mewarnai slot abu-abu.
-  /// Logic overlap: A overlap B jika A_mulai < B_selesai AND A_selesai > B_mulai
+  /// Logic overlap: A overlap B jika A_mulai <= B_selesai AND A_selesai >= B_mulai
   ///
   /// [excludePengunjungId]: isi saat mode "edit" agar slot milik sendiri tidak ikut dihitung.
   Future<Set<String>> getBookedSlotIds({
@@ -31,8 +32,8 @@ class SlotRepository {
       FROM pengunjung_slot ps
       INNER JOIN pengunjung p ON ps.pengunjung_id = p.id
       WHERE p.status          = 'AKTIF'
-        AND p.tanggal_mulai   < ?
-        AND p.tanggal_selesai > ?
+        AND p.tanggal_mulai   <= ?
+        AND p.tanggal_selesai >= ?
     ''';
     final args = <String>[tanggalSelesai, tanggalMulai];
 

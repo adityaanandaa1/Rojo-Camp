@@ -17,7 +17,7 @@ class Pengunjung {
   final String nama;
   final String alamat;
   final String tanggalMulai;    // Format: YYYY-MM-DD
-  final String tanggalSelesai;  // Format: YYYY-MM-DD (exclusive — malam terakhir = tgl_selesai - 1 hari)
+  final String tanggalSelesai;  // Format: YYYY-MM-DD (inklusif — slot terpakai sampai akhir tgl_selesai)
   final int jumlahPengunjung;
   final String jenisPesanan;    // 'RESERVASI' | 'ONSITE'
   final String? keterangan;

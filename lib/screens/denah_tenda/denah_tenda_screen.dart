@@ -65,12 +65,12 @@ class _DenahTendaScreenState extends State<DenahTendaScreen> {
   Future<void> _loadData() async {
     if (widget.readOnly) {
       // View-only: cek ketersediaan untuk SATU hari (_viewDate).
-      // Window [viewDate, viewDate+1) menangkap rombongan yang sedang
-      // menginap di hari itu lewat overlap query yang sama dengan
+      // Window [viewDate, viewDate] (inklusif) menangkap rombongan yang
+      // sedang menginap di hari itu lewat overlap query yang sama dengan
       // mode selection.
       await _provider.init(
         tanggalMulai: _fmt.format(_viewDate),
-        tanggalSelesai: _fmt.format(_viewDate.add(const Duration(days: 1))),
+        tanggalSelesai: _fmt.format(_viewDate),
         initialSelected: const {},
         readOnly: true,
       );

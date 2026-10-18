@@ -84,12 +84,11 @@ class _TambahPengunjungScreenState extends State<TambahPengunjungScreen> {
   Future<void> _pilihTanggal(bool isMulai) async {
     final initial = isMulai
         ? (_tanggalMulai ?? DateTime.now())
-        : (_tanggalSelesai ??
-            (_tanggalMulai?.add(const Duration(days: 1)) ??
-                DateTime.now()));
+        : (_tanggalSelesai ?? _tanggalMulai ?? DateTime.now());
+    // Tanggal selesai inklusif: boleh sama dengan tanggal mulai (1 hari).
     final firstDate = isMulai
         ? DateTime.now().subtract(const Duration(days: 365))
-        : (_tanggalMulai?.add(const Duration(days: 1)) ?? DateTime.now());
+        : (_tanggalMulai ?? DateTime.now());
 
     final picked = await showDatePicker(
       context: context,
@@ -110,7 +109,7 @@ class _TambahPengunjungScreenState extends State<TambahPengunjungScreen> {
       if (isMulai) {
         _tanggalMulai = picked;
         if (_tanggalSelesai != null &&
-            !_tanggalSelesai!.isAfter(picked)) {
+            _tanggalSelesai!.isBefore(picked)) {
           _tanggalSelesai = null;
         }
         if (_selectedSlotIds.isNotEmpty) {

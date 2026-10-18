@@ -149,7 +149,7 @@ class PengunjungRepository {
   /// Jumlah slot terpakai per kategori di [tanggal].
   ///
   /// Predikat overlap sama dengan [SlotRepository.getBookedSlotIds]
-  /// (window [tanggal, tanggal+1)) supaya statistik dan denah selalu sepakat.
+  /// (window [tanggal, tanggal], inklusif) supaya statistik dan denah selalu sepakat.
   ///
   /// Kategori diambil dari [kSemuaSlot], BUKAN dari tabel slot_tenda: tabel
   /// itu hanya di-seed di onCreate, jadi install lama masih menyimpan
@@ -161,8 +161,8 @@ class PengunjungRepository {
       FROM pengunjung_slot ps
       INNER JOIN pengunjung p ON ps.pengunjung_id = p.id
       WHERE p.status          = 'AKTIF'
-        AND p.tanggal_mulai   < date(?, '+1 day')
-        AND p.tanggal_selesai > ?
+        AND p.tanggal_mulai   <= ?
+        AND p.tanggal_selesai >= ?
     ''', [tanggal, tanggal]);
 
     final kategoriById = {for (final s in kSemuaSlot) s.id: s.kategori};

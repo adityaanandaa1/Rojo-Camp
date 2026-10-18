@@ -69,3 +69,6 @@ ios/Runner/GoogleService-Info.plist
 *credentials*.json
 *service-account*.json
 client_secret*.json
+
+CLAUDE.md
+install.ps1
