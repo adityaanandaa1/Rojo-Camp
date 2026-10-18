@@ -100,7 +100,7 @@ class _DetailPengunjungScreenState extends State<DetailPengunjungScreen> {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16)),
-        title: const Text('Batalkan Pesanan'),
+        title: const Text('Batalkan'),
         content: const Text(
           'Yakin ingin membatalkan pesanan ini?\n'
           'Status berubah jadi Non-Aktif dan slot tenda dikosongkan.',
@@ -124,6 +124,43 @@ class _DetailPengunjungScreenState extends State<DetailPengunjungScreen> {
     await context.read<PengunjungProvider>().batalkan(id);
     if (mounted) {
       _showSnack('Pesanan dibatalkan', color: Colors.orange.shade700);
+    }
+  }
+
+  // ── Selesaikan manual ───────────────────────────────────────
+
+  Future<void> _selesaikan(BuildContext ctx, Pengunjung p) async {
+    final confirm = await showDialog<bool>(
+      context: ctx,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: const Text('Selesaikan Sekarang'),
+        content: Text(
+          'Tandai rombongan ini sudah pulang?\n'
+          'Status berubah jadi Non-Aktif dan waktu checkout dicatat '
+          '${_fmtDate(p.tanggalSelesai)}, 09:00.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Tidak'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Selesaikan',
+                style: TextStyle(
+                    color: Colors.green.shade700,
+                    fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+    await context.read<PengunjungProvider>().selesaikan(p);
+    if (mounted) {
+      _showSnack('Kunjungan diselesaikan', color: Colors.green.shade600);
     }
   }
 
@@ -353,13 +390,34 @@ class _DetailPengunjungScreenState extends State<DetailPengunjungScreen> {
                       icon: const Icon(Icons.cancel_outlined,
                           size: 18, color: Colors.red),
                       label: const Text(
-                        'Batalkan Pesanan',
+                        'Batalkan',
                         style: TextStyle(
                             color: Colors.red,
                             fontWeight: FontWeight.w600),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _selesaikan(ctx, p),
+                      icon: Icon(Icons.check_circle_outline,
+                          size: 18, color: Colors.green.shade700),
+                      label: Text(
+                        'Selesaikan Sekarang',
+                        style: TextStyle(
+                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.green.shade700),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
