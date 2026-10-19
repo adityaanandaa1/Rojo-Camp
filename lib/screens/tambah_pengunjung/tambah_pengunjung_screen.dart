@@ -48,7 +48,7 @@ class _TambahPengunjungScreenState extends State<TambahPengunjungScreen> {
   static final _fmt = DateFormat('yyyy-MM-dd');
 
   static final Map<String, String> _labelCache = {
-    for (final s in kSemuaSlot) s.id: s.labelDisplay,
+    for (final s in kSemuaSlot) s.id: s.labelTampil,
   };
 
   bool get _isEdit => widget.existingPengunjung != null;

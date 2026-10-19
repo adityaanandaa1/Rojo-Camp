@@ -29,23 +29,13 @@ class _DetailPengunjungScreenState extends State<DetailPengunjungScreen> {
 
   bool _isSharing = false;
 
-  // Cache label statis dari seed_data — tidak perlu query DB
+  // Cache label statis dari seed_data — tidak perlu query DB.
+  // Dipakai field "Jenis Tenda" dan e-ticket.
   static final Map<String, String> _slotLabels = {
-    for (final s in kSemuaSlot) s.id: s.labelDisplay,
+    for (final s in kSemuaSlot) s.id: s.labelTampil,
   };
 
-  // Cache kategori per slot
-  static final Map<String, String> _slotKategori = {
-    for (final s in kSemuaSlot) s.id: s.kategori,
-  };
-
-  /// Label slot dengan prefix "Big " untuk BIG (ex-REGULER).
-  static String _labelForSlot(String id) {
-    final label = _slotLabels[id] ?? id;
-    final kategori = _slotKategori[id];
-    if (kategori == 'BIG') return 'Big $label';
-    return label;
-  }
+  static String _labelForSlot(String id) => _slotLabels[id] ?? id;
 
   Pengunjung? _find(List<Pengunjung> list) {
     try {
