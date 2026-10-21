@@ -94,7 +94,7 @@ class _DaftarPengunjungScreenState extends State<DaftarPengunjungScreen> {
               controller: _searchCtrl,
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
-                hintText: 'Cari nama pengunjung...',
+                hintText: 'Cari nama pengunjung',
                 prefixIcon: Icon(Icons.search, size: 20, color: Colors.grey.shade500),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
