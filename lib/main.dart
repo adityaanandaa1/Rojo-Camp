@@ -1,6 +1,7 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
@@ -13,6 +14,9 @@ void main() async {
 
   // Inisialisasi DB + seed slot master saat pertama install
   await DatabaseHelper.instance.database;
+
+  // Nama bulan Indonesia untuk DateFormat(..., 'id_ID').
+  await initializeDateFormatting('id_ID');
 
   runApp(
     MultiProvider(

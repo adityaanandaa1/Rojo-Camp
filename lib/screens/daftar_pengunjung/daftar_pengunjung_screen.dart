@@ -21,6 +21,7 @@ class _DaftarPengunjungScreenState extends State<DaftarPengunjungScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
   int _selectedTab = 0; // 0: Aktif, 1: Non-Aktif
+  DateTime? _filterTanggal;
 
   @override
   void dispose() {
@@ -28,10 +29,37 @@ class _DaftarPengunjungScreenState extends State<DaftarPengunjungScreen> {
     super.dispose();
   }
 
+  Future<void> _pickFilterTanggal() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _filterTanggal ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(primary: Color(0xFF0088FF)),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null && mounted) setState(() => _filterTanggal = picked);
+  }
+
   List<Pengunjung> _filter(List<Pengunjung> list) {
     // Filter by Tab (0 = AKTIF, 1 = NON_AKTIF)
     final tabStatus = _selectedTab == 0 ? 'AKTIF' : 'NON_AKTIF';
     var filtered = list.where((p) => p.status == tabStatus).toList();
+
+    // Filter by tanggal: masa menginap mencakup tanggal terpilih
+    // (predikat overlap yang sama dengan stat card di Beranda).
+    if (_filterTanggal != null) {
+      final t = DateFormat('yyyy-MM-dd').format(_filterTanggal!);
+      filtered = filtered
+          .where((p) =>
+              p.tanggalMulai.compareTo(t) <= 0 &&
+              p.tanggalSelesai.compareTo(t) >= 0)
+          .toList();
+    }
 
     // Sort based on Tab
     if (_selectedTab == 0) {
@@ -75,6 +103,17 @@ class _DaftarPengunjungScreenState extends State<DaftarPengunjungScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Badge(
+              isLabelVisible: _filterTanggal != null,
+              smallSize: 8,
+              backgroundColor: const Color(0xFFF97316),
+              child: const Icon(Icons.calendar_today_outlined,
+                  color: Color(0xFF0088FF)),
+            ),
+            tooltip: 'Filter Tanggal',
+            onPressed: _pickFilterTanggal,
+          ),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF0088FF)),
             tooltip: 'Scan QR Checkout',
@@ -123,6 +162,48 @@ class _DaftarPengunjungScreenState extends State<DaftarPengunjungScreen> {
               ),
             ),
           ),
+
+          // ── Banner filter tanggal ─────────────────────────
+          if (_filterTanggal != null)
+            Container(
+              margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+              padding: const EdgeInsets.only(left: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6F3FF),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Pengunjung tanggal ',
+                        children: [
+                          TextSpan(
+                            text: DateFormat('d MMMM yyyy', 'id_ID')
+                                .format(_filterTanggal!),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFF0062B8)),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _filterTanggal = null),
+                    child: const Text(
+                      'Hapus',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0062B8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // ── Tab Switcher ──────────────────────────────────
           Padding(
@@ -247,8 +328,10 @@ class _DaftarPengunjungScreenState extends State<DaftarPengunjungScreen> {
                               children: [
                                 Icon(Icons.search_off, size: 56, color: Colors.grey.shade300),
                                 const SizedBox(height: 10),
-                                const Text(
-                                  'Tidak ada pengunjung\nyang sesuai pencarian.',
+                                Text(
+                                  _query.trim().isEmpty
+                                      ? 'Tidak ada pengunjung\ndi tanggal ini.'
+                                      : 'Tidak ada pengunjung\nyang sesuai pencarian.',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(color: Colors.grey, fontSize: 13),
                                 ),

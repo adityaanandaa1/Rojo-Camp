@@ -42,7 +42,7 @@ class _PengunjungHariIniScreenState extends State<PengunjungHariIniScreen> {
         title: Column(
           children: [
             const Text(
-              'Pengunjung Hari Ini',
+              'Daftar Pengunjung',
               style: TextStyle(
                 color: Colors.black87,
                 fontSize: 16,
