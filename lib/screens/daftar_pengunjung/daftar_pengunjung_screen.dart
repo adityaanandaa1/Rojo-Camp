@@ -180,7 +180,7 @@ class _DaftarPengunjungScreenState extends State<DaftarPengunjungScreen> {
                         text: 'Pengunjung tanggal ',
                         children: [
                           TextSpan(
-                            text: DateFormat('d MMMM yyyy', 'id_ID')
+                            text: DateFormat('d MMMM yyyy')
                                 .format(_filterTanggal!),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),

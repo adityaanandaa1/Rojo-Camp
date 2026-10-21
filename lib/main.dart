@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
@@ -15,8 +16,10 @@ void main() async {
   // Inisialisasi DB + seed slot master saat pertama install
   await DatabaseHelper.instance.database;
 
-  // Nama bulan Indonesia untuk DateFormat(..., 'id_ID').
+  // Semua DateFormat tanpa locale eksplisit ikut bahasa Indonesia
+  // ("Okt", "Oktober"). Format angka saja (yyyy-MM-dd dll.) tidak terpengaruh.
   await initializeDateFormatting('id_ID');
+  Intl.defaultLocale = 'id_ID';
 
   runApp(
     MultiProvider(
