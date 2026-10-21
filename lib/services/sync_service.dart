@@ -72,7 +72,7 @@ class SyncService {
   SyncService._();
 
   static final Map<String, String> _slotLabels = {
-    for (final s in kSemuaSlot) s.id: s.labelDisplay,
+    for (final s in kSemuaSlot) s.id: s.labelTampil,
   };
 
   // ── PUSH: Kirim data lokal → Google Sheets ────────────────────

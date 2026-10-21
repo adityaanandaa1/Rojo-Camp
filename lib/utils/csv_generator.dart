@@ -23,7 +23,7 @@ class CsvGenerator {
 
   // Cache label slot dari data statis
   static final Map<String, String> _slotLabels = {
-    for (final s in kSemuaSlot) s.id: s.labelDisplay,
+    for (final s in kSemuaSlot) s.id: s.labelTampil,
   };
 
   // Header kolom CSV — urutan ini yang akan muncul di Excel

@@ -17,9 +17,9 @@ import '../data/models/pengunjung.dart';
 class EticketWidget extends StatelessWidget {
   final Pengunjung pengunjung;
 
-  /// Map dari slotId → labelDisplay.
+  /// Map dari slotId → labelTampil.
   /// Gunakan kSemuaSlot dari seed_data.dart:
-  /// `{for (final s in kSemuaSlot) s.id: s.labelDisplay}`
+  /// `{for (final s in kSemuaSlot) s.id: s.labelTampil}`
   final Map<String, String> slotLabels;
 
   const EticketWidget({

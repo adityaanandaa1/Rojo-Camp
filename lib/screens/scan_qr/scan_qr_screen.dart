@@ -31,7 +31,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   bool _torchOn = false;
 
   static final Map<String, String> _slotLabels = {
-    for (final s in kSemuaSlot) s.id: s.labelDisplay,
+    for (final s in kSemuaSlot) s.id: s.labelTampil,
   };
 
   // ── Lifecycle ──────────────────────────────────────────────

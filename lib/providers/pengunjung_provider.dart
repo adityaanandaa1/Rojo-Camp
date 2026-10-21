@@ -47,6 +47,13 @@ class PengunjungProvider extends ChangeNotifier {
     await loadAll();
   }
 
+  /// Selesaikan manual (admin lupa scan QR saat pengunjung pulang).
+  /// Waktu checkout dicatat = tanggal selesai booking, jam 09:00.
+  Future<void> selesaikan(Pengunjung p) async {
+    await _repo.checkout(p.id, '${p.tanggalSelesai}T09:00:00.000');
+    await loadAll();
+  }
+
   /// Batalkan pesanan manual (no-show).
   Future<void> batalkan(String id) async {
     await _repo.batalkan(id);
