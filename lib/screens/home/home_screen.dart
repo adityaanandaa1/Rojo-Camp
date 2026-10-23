@@ -11,10 +11,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../config/app_config.dart';
+import '../../data/models/pengunjung.dart';
 import '../../providers/pengunjung_provider.dart';
 import '../../services/sync_service.dart';
 import '../../utils/csv_generator.dart';
+import '../../widgets/booking_row.dart';
 import '../denah_tenda/denah_tenda_screen.dart';
+import '../pengunjung_hari_ini/pengunjung_hari_ini_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -357,6 +360,22 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 28),
 
+              // ── Booking hari ini ─────────────────────────
+              Consumer<PengunjungProvider>(
+                builder: (ctx, provider, _) => _BookingHariIniCard(
+                  list: provider
+                      .aktifPadaTanggal(_fmtYmd.format(_selectedDate)),
+                  onLihatSemua: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          PengunjungHariIniScreen(tanggal: _selectedDate),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+
               // ── Donut chart ──────────────────────────────
               _ChartCard(
                 stats: _stats,
@@ -559,6 +578,72 @@ class _StatCard extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BookingHariIniCard extends StatelessWidget {
+  static const _maxPreview = 3;
+
+  final List<Pengunjung> list;
+  final VoidCallback onLihatSemua;
+
+  const _BookingHariIniCard({required this.list, required this.onLihatSemua});
+
+  @override
+  Widget build(BuildContext context) {
+    final slotTerpakai = list.fold<int>(0, (sum, p) => sum + p.slotIds.length);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Booking Hari Ini',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(
+            list.isEmpty
+                ? 'Tidak ada booking di tanggal ini'
+                : '${list.length} rombongan · $slotTerpakai slot terpakai',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          ),
+          const SizedBox(height: 8),
+          for (final p in list.take(_maxPreview)) ...[
+            const Divider(color: Color(0xFFF3F4F6), height: 1, thickness: 1),
+            BookingRow(
+              pengunjung: p,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+            ),
+          ],
+          if (list.length > _maxPreview)
+            Center(
+              child: TextButton(
+                onPressed: onLihatSemua,
+                child: Text(
+                  'Lihat semua (${list.length})',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF0070D6),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

@@ -1,6 +1,9 @@
 // lib/app.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'l10n/id_material_localizations.dart';
 import 'screens/main_screen.dart';
 
 class RojoCampApp extends StatelessWidget {
@@ -11,6 +14,13 @@ class RojoCampApp extends StatelessWidget {
     return MaterialApp(
       title: 'Kebun Rojo Camp',
       debugShowCheckedModeBanner: false,
+      locale: const Locale('id', 'ID'),
+      supportedLocales: const [Locale('id', 'ID')],
+      localizationsDelegates: const [
+        IdMaterialLocalizationsDelegate(),
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFF5F6FA),
         primaryColor: const Color(0xFF0088FF),

@@ -18,6 +18,17 @@ class PengunjungProvider extends ChangeNotifier {
   List<Pengunjung> get nonAktif =>
       _list.where((p) => p.status == 'NON_AKTIF').toList();
 
+  /// Rombongan AKTIF yang menempati slot di [tanggal] (YYYY-MM-DD), urut nama.
+  /// Predikat overlap sama dengan [PengunjungRepository.getStatsByDate]
+  /// supaya daftar ini selalu cocok dengan angka di stat card.
+  List<Pengunjung> aktifPadaTanggal(String tanggal) => _list
+      .where((p) =>
+          p.status == 'AKTIF' &&
+          p.tanggalMulai.compareTo(tanggal) <= 0 &&
+          p.tanggalSelesai.compareTo(tanggal) >= 0)
+      .toList()
+    ..sort((a, b) => a.nama.toLowerCase().compareTo(b.nama.toLowerCase()));
+
   /// Muat ulang semua data dari SQLite.
   Future<void> loadAll() async {
     _isLoading = true;
