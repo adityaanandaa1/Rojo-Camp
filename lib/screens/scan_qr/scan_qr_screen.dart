@@ -216,7 +216,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
 
           if (_isProcessing)
             Container(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -258,7 +258,7 @@ class _ScanOverlayPainter extends CustomPainter {
         Path()..addRRect(RRect.fromRectAndRadius(
             scanRect, const Radius.circular(14))),
       ),
-      Paint()..color = Colors.black.withOpacity(0.62),
+      Paint()..color = Colors.black.withValues(alpha: 0.62),
     );
 
     final cornerPaint = Paint()

@@ -62,10 +62,12 @@ class QrShareHelper {
     // Kita hanya perlu share sheet terbuka — tidak perlu tahu
     // user memilih app mana.
     // ignore: unawaited_futures
-    Share.shareXFiles(
-      [XFile(file.path, mimeType: 'image/png')],
-      subject: 'E-Ticket Kebun Rojo Camp',
-      text: shareText,
+    SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path, mimeType: 'image/png')],
+        subject: 'E-Ticket Kebun Rojo Camp',
+        text: shareText,
+      ),
     );
   }
 
@@ -132,9 +134,11 @@ class QrShareHelper {
     if (await eticketDir.exists()) {
       await for (final entity in eticketDir.list()) {
         if (entity is File) {
-          await entity.delete().catchError(
-            (e) {/* Abaikan error delete — tidak kritis */},
-          );
+          try {
+            await entity.delete();
+          } catch (_) {
+            // Abaikan error delete — tidak kritis
+          }
         }
       }
     } else {

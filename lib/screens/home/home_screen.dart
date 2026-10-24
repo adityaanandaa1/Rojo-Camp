@@ -192,8 +192,10 @@ class _HomeScreenState extends State<HomeScreen> {
         final now = DateTime.now().toIso8601String();
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_sync_time', now);
+        if (!mounted) return;
         setState(() => _lastSyncTime = now);
         await context.read<PengunjungProvider>().loadAll();
+        if (!mounted) return;
         _showSnack('✓ ${result.synced} record berhasil disinkronkan',
             Colors.green.shade600);
       } else {
@@ -492,7 +494,7 @@ class _DateFilterPill extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF0088FF).withOpacity(0.1),
+                color: const Color(0xFF0088FF).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Text(
@@ -539,7 +541,7 @@ class _StatCard extends StatelessWidget {
             : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -604,7 +606,7 @@ class _BookingHariIniCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -671,7 +673,7 @@ class _ChartCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -824,7 +826,7 @@ class _DownloadCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -974,7 +976,7 @@ class _SyncCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

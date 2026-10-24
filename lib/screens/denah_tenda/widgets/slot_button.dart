@@ -63,7 +63,7 @@ class SlotButton extends StatelessWidget {
           boxShadow: state == SlotState.available
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -98,7 +98,7 @@ class SectionHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF0088FF).withOpacity(0.08),
+        color: const Color(0xFF0088FF).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

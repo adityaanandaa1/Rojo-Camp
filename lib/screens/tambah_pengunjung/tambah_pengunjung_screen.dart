@@ -386,7 +386,7 @@ class _TambahPengunjungScreenState extends State<TambahPengunjungScreen> {
 
             _Label('Jenis Pesanan'),
             DropdownButtonFormField<String>(
-              value: _jenisPesanan,
+              initialValue: _jenisPesanan,
               decoration: const InputDecoration(),
               items: const [
                 DropdownMenuItem(

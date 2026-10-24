@@ -7,7 +7,6 @@
 // membaca karakter UTF-8 (nama Indonesia, keterangan) dengan benar.
 // Tanpa BOM, Excel sering salah baca huruf seperti é, ñ, dll.
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:intl/intl.dart';
@@ -67,13 +66,15 @@ class CsvGenerator {
     final file = await _saveToTemp(csvContent, tanggalMulai, tanggalSelesai);
 
     // 4. Share — user bisa pilih WhatsApp, email, Google Drive, dll.
-    return Share.shareXFiles(
-      [XFile(file.path, mimeType: 'text/csv')],
-      subject: 'Laporan Pengunjung Kebun Rojo Camp',
-      text: '📊 Laporan Pengunjung Kebun Rojo Camp\n'
-            '📅 Periode: ${_fmtDate(tanggalMulai)} s/d ${_fmtDate(tanggalSelesai)}\n'
-            '👥 Total: ${list.length} rombongan\n\n'
-            'Buka file CSV dengan Excel atau Google Sheets.',
+    return SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path, mimeType: 'text/csv')],
+        subject: 'Laporan Pengunjung Kebun Rojo Camp',
+        text: '📊 Laporan Pengunjung Kebun Rojo Camp\n'
+              '📅 Periode: ${_fmtDate(tanggalMulai)} s/d ${_fmtDate(tanggalSelesai)}\n'
+              '👥 Total: ${list.length} rombongan\n\n'
+              'Buka file CSV dengan Excel atau Google Sheets.',
+      ),
     );
   }
 
@@ -138,7 +139,9 @@ class CsvGenerator {
     if (await laporanDir.exists()) {
       await for (final entity in laporanDir.list()) {
         if (entity is File) {
-          await entity.delete().catchError((_) {});
+          try {
+            await entity.delete();
+          } catch (_) {}
         }
       }
     } else {
@@ -146,8 +149,8 @@ class CsvGenerator {
     }
 
     final ts = DateTime.now().millisecondsSinceEpoch;
-    final safeRange = '${mulai}_${selesai}'.replaceAll('-', '');
-    final file = File('${laporanDir.path}/rojocamp_$safeRange\_$ts.csv');
+    final safeRange = '${mulai}_$selesai'.replaceAll('-', '');
+    final file = File('${laporanDir.path}/rojocamp_${safeRange}_$ts.csv');
 
     // Tulis BOM dulu, lalu content CSV sebagai UTF-8
     // BOM = [0xEF, 0xBB, 0xBF] — penanda encoding UTF-8 untuk Excel
